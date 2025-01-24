@@ -9,23 +9,18 @@ where
         .position(|window| window == needle)
 }
 
-fn list_pokemons(bytes: &[u8]) -> Vec<Vec<Move>> {
-    do_list_pokemon(bytes, Vec::new())
-}
-fn do_list_pokemon(bytes: &[u8], mut acc: Vec<Vec<Move>>) -> Vec<Vec<Move>> {
-    match find_subsequence(bytes, &END_OF_POKEMON) {
-        Some(index) => {
-            let (found, remainder) = bytes.split_at(index);
-            acc.push(
-                found
-                    .chunks(4)
-                    .map(|chunk| Move::from(&chunk.try_into().unwrap()))
-                    .collect(),
-            );
-            do_list_pokemon(&remainder[4..], acc)
-        }
-        None => acc,
-    }
+fn list_pokemons(bytes: &[u8]) -> impl Iterator<Item = Vec<Move>> + '_ {
+    let mut current_remaining_data = bytes;
+    std::iter::from_fn(move || {
+        find_subsequence(current_remaining_data, &END_OF_POKEMON).map(|position| {
+            let (pokemon_data, remaining) = current_remaining_data.split_at(position);
+            current_remaining_data = &remaining[4..];
+            pokemon_data
+                .chunks(4)
+                .map(|chunk| Move::from(&chunk.try_into().unwrap()))
+                .collect()
+        })
+    })
 }
 
 #[derive(Debug)]
@@ -51,7 +46,7 @@ fn main() {
         &bytes[ignored..]
     };
 
-    for (id, pokemon) in list_pokemons(poke_bytes).iter().enumerate() {
+    for (id, pokemon) in list_pokemons(poke_bytes).enumerate() {
         println!("{id}: {pokemon:?}");
     }
 }
