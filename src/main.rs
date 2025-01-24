@@ -10,7 +10,7 @@ where
         .position(|window| window == needle)
 }
 
-fn list_pokemons(bytes: &[u8]) -> impl Iterator<Item = Vec<Move>> + '_ {
+fn list_pokemons(bytes: &[u8]) -> impl Iterator<Item = impl Iterator<Item = Move> + '_> + '_ {
     let mut current_remaining_data = bytes;
     std::iter::from_fn(move || {
         find_subsequence(current_remaining_data, &POKEMON_DELIMITER).map(|position| {
@@ -19,7 +19,6 @@ fn list_pokemons(bytes: &[u8]) -> impl Iterator<Item = Vec<Move>> + '_ {
             pokemon_data
                 .chunks(4)
                 .map(|chunk| Move::from(&chunk.try_into().unwrap()))
-                .collect()
         })
     })
 }
@@ -48,6 +47,7 @@ fn main() {
     };
 
     for (id, pokemon) in list_pokemons(poke_bytes).enumerate() {
+        let pokemon: Vec<_> = pokemon.collect();
         println!("{id}: {pokemon:?}");
     }
 }
