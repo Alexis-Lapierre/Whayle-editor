@@ -10,7 +10,7 @@ where
         .position(|window| window == needle)
 }
 
-fn list_pokemons(bytes: &[u8]) -> impl Iterator<Item = impl Iterator<Item = Move> + '_> + '_ {
+fn list_pokemons(bytes: &[u8]) -> impl Iterator<Item = impl Iterator<Item = Move> + use<'_>> {
     let mut current_remaining_data = bytes;
     std::iter::from_fn(move || {
         find_subsequence(current_remaining_data, &POKEMON_DELIMITER).map(|position| {
