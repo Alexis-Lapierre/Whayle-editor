@@ -1229,3 +1229,8 @@ pub const MOVE_NAMES: [&'static str; 559] = [
     "Fusion Flare",
     "Fusion Bolt",
 ];
+
+pub fn move_id_to_name(id: usize) -> &'static str {
+    debug_assert!(id != 0);
+    MOVE_NAMES.get(id - 1).unwrap_or(&"-----")
+}
