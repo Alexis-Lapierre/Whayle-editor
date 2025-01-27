@@ -9,8 +9,8 @@ fn main() {
     let mut pokemons = POKE_NAMES.iter().zip(parsed.pokemons);
 
     let args: Vec<String> = std::env::args().collect();
-    match &args[..] {
-        [_name, poke_id, ..] => {
+    match &args[1..] {
+        [poke_id, ..] => {
             let poke_id: u16 = poke_id.parse().expect("First argument to be pokemon ID");
             assert!(poke_id != 0);
             let (name, moves) = pokemons.nth(usize::from(poke_id - 1)).unwrap();
