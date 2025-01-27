@@ -48,14 +48,14 @@ fn main() {
             .expect("At least one pokemon delimited in file");
         &bytes[(ignored + DELIMITER_LEN)..]
     };
-    let pokemons = POKE_NAMES.iter().zip(list_pokemons(poke_bytes));
+    let mut pokemons = POKE_NAMES.iter().zip(list_pokemons(poke_bytes));
 
     let args: Vec<String> = std::env::args().collect();
     match &args[..] {
         [_name, poke_id, ..] => {
             let poke_id: u16 = poke_id.parse().expect("First argument to be pokemon ID");
             assert!(poke_id != 0);
-            let (name, moves) = pokemons.skip(usize::from(poke_id - 1)).next().unwrap();
+            let (name, moves) = pokemons.nth(usize::from(poke_id - 1)).unwrap();
             println!("Pokemon: {name}");
             for m in moves {
                 println!("  - {:15} at {:3}", move_id_to_name(m.id.into()), m.level);

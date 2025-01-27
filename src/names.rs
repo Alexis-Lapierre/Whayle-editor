@@ -1,4 +1,4 @@
-pub const POKE_NAMES: [&'static str; 667] = [
+pub const POKE_NAMES: [&str; 667] = [
     "Bulbasaur",
     "Ivysaur",
     "Venusaur",
@@ -668,7 +668,7 @@ pub const POKE_NAMES: [&'static str; 667] = [
     "Meloetta-Pirouette",
 ];
 
-pub const MOVE_NAMES: [&'static str; 559] = [
+pub const MOVE_NAMES: [&str; 559] = [
     "Pound",
     "Karate Chop",
     "Double Slap",
