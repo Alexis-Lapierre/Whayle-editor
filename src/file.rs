@@ -9,6 +9,22 @@ pub struct SaveFile {
     pub pokemons: Vec<Vec<Move>>,
 }
 
+impl SaveFile {
+    pub fn to_binary_format(self) -> Vec<u8> {
+        let mut result = Vec::from(self.file_start);
+        result.extend_from_slice(&POKEMON_DELIMITER);
+        for pokemon in self.pokemons {
+            for m in pokemon {
+                let into: [u8; 4] = m.into();
+                result.extend_from_slice(&into);
+            }
+            result.extend_from_slice(&POKEMON_DELIMITER);
+        }
+
+        result
+    }
+}
+
 impl TryFrom<&[u8]> for SaveFile {
     type Error = ();
 
@@ -39,10 +55,16 @@ impl TryFrom<&[u8]> for SaveFile {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Move {
     id: u16,
     level: u16,
+}
+
+impl Move {
+    pub const fn new(id: u16, level: u16) -> Self {
+        Self { id, level }
+    }
 }
 
 impl From<&[u8; 4]> for Move {
@@ -51,6 +73,14 @@ impl From<&[u8; 4]> for Move {
             id: u16::from_le_bytes([value[0], value[1]]),
             level: u16::from_le_bytes([value[2], value[3]]),
         }
+    }
+}
+
+impl Into<[u8; 4]> for Move {
+    fn into(self) -> [u8; 4] {
+        let [ileft, iright] = self.id.to_le_bytes();
+        let [lleft, lright] = self.level.to_le_bytes();
+        [ileft, iright, lleft, lright]
     }
 }
 
