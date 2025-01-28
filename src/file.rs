@@ -33,17 +33,11 @@ impl TryFrom<&[u8]> for SaveFile {
         let file_start = Box::from(file_start);
 
         let pokemons: Vec<Vec<Move>> = {
-            let mut current_remaining_data = &pokemon[POKEMON_DELIMITER.len()..];
-            std::iter::from_fn(move || {
-                split(current_remaining_data, &POKEMON_DELIMITER).map(
-                    |(pokemon_data, remaining)| {
-                        current_remaining_data = &remaining[POKEMON_DELIMITER.len()..];
-                        pokemon_data
-                            .chunks(4)
-                            .map(|chunk| Move::from(&chunk.try_into().unwrap()))
-                            .collect()
-                    },
-                )
+            list_pokemon_data(pokemon).map(|pokemon_data| {
+                pokemon_data
+                    .chunks(4)
+                    .map(|chunk| Move::from(&chunk.try_into().unwrap()))
+                    .collect()
             })
         }
         .collect();
@@ -104,4 +98,14 @@ where
         .position(|window| window == needle);
 
     needle_position.map(|position| haystack.split_at(position))
+}
+
+fn list_pokemon_data(data: &[u8]) -> impl Iterator<Item = &[u8]> {
+    let mut current_remaining_data = &data[POKEMON_DELIMITER.len()..];
+    std::iter::from_fn(move || {
+        split(current_remaining_data, &POKEMON_DELIMITER).map(|(pokemon_data, remaining)| {
+            current_remaining_data = &remaining[POKEMON_DELIMITER.len()..];
+            pokemon_data
+        })
+    })
 }
