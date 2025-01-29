@@ -49,7 +49,7 @@ impl TryFrom<&[u8]> for SaveFile {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Move {
     id: u16,
     level: u16,
