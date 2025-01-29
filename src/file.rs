@@ -61,6 +61,12 @@ impl Move {
     }
 }
 
+impl PartialEq for Move {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id && self.level == other.level
+    }
+}
+
 impl From<&[u8; 4]> for Move {
     fn from(value: &[u8; 4]) -> Self {
         Self {

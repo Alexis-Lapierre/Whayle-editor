@@ -32,6 +32,34 @@ fn main() {
                 .write_all(&save_file.to_binary_format())
                 .expect("Writing to file to work");
         }
+        [poke_id, rem, move_id, move_level] if rem == "rem" => {
+            let mut save_file = parsed;
+            let poke_id: u16 = poke_id.parse().expect("First argument to be Pokemon ID");
+            let poke_id = poke_id - 1;
+            let pmove = {
+                let id: u16 = move_id.parse().expect("Third argument to be move ID");
+                let level: u16 = move_level.parse().expect("Forth argument to be level");
+                Move::new(id, level)
+            };
+            let moves = &mut save_file.pokemons[usize::from(poke_id)];
+            let original_length = moves.len();
+            moves.retain(|m| *m != pmove);
+            if moves.len() < original_length {
+                println!(
+                    "Removed {} from Pokemon {}",
+                    pmove, POKE_NAMES[usize::from(poke_id)]
+                );
+                std::fs::File::create_new("out.narc")
+                    .unwrap()
+                    .write_all(&save_file.to_binary_format())
+                    .expect("Writing to file to work");
+            } else {
+                println!(
+                    "{} was not found for Pokemon {}",
+                    pmove, POKE_NAMES[usize::from(poke_id)]
+                );
+            }
+        }
         [poke_id] => {
             let mut pokemons = POKE_NAMES.iter().zip(parsed.pokemons);
             let poke_id: u16 = poke_id.parse().expect("First argument to be pokemon ID");
