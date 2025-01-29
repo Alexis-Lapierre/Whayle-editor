@@ -54,7 +54,7 @@ fn main() {
                     .write_all(&save_file.to_binary_format())
                     .expect("Writing to file to work");
             } else {
-                println!(
+                eprintln!(
                     "{} was not found for Pokemon {}",
                     pmove, POKE_NAMES[usize::from(poke_id)]
                 );
