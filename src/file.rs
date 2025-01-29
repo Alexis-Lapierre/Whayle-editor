@@ -49,7 +49,7 @@ impl TryFrom<&[u8]> for SaveFile {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Move {
     id: u16,
     level: u16,
@@ -58,12 +58,6 @@ pub struct Move {
 impl Move {
     pub const fn new(id: u16, level: u16) -> Self {
         Self { id, level }
-    }
-}
-
-impl PartialEq for Move {
-    fn eq(&self, other: &Self) -> bool {
-        self.id == other.id && self.level == other.level
     }
 }
 
