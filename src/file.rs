@@ -56,6 +56,7 @@ pub struct Move {
 }
 
 impl Move {
+    #[must_use]
     pub const fn new(id: u16, level: u16) -> Self {
         Self { id, level }
     }
