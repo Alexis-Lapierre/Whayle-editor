@@ -70,11 +70,11 @@ impl From<&[u8; 4]> for Move {
     }
 }
 
-impl Into<[u8; 4]> for Move {
-    fn into(self) -> [u8; 4] {
-        let [ileft, iright] = self.id.to_le_bytes();
-        let [lleft, lright] = self.level.to_le_bytes();
-        [ileft, iright, lleft, lright]
+impl From<Move> for [u8; 4] {
+    fn from(value: Move) -> Self {
+        let id = value.id.to_le_bytes();
+        let level = value.level.to_le_bytes();
+        [id[0], id[1], level[0], level[1]]
     }
 }
 
