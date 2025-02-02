@@ -60,6 +60,14 @@ impl Move {
     pub const fn new(id: u16, level: u16) -> Self {
         Self { id, level }
     }
+
+    pub fn id(&self) -> u16 {
+        self.id
+    }
+
+    pub fn level(&self) -> u16 {
+        self.level
+    }
 }
 
 impl From<&[u8; 4]> for Move {

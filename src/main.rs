@@ -13,10 +13,16 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     match &args[1..] {
         [poke_id, add, move_id, move_level] if add == "add" => {
-            add_move_to_pokemon(parsed, poke_id, move_id, move_level);
+            match parse_args(poke_id, move_id, move_level) {
+                Ok((poke_id, pmove)) => add_move_to_pokemon(parsed, poke_id, pmove),
+                Err(e) => eprintln!("Error: {}", e),
+            }
         }
         [poke_id, rem, move_id, move_level] if rem == "rem" => {
-            remove_move_from_pokemon(parsed, poke_id, move_id, move_level);
+            match parse_args(poke_id, move_id, move_level) {
+                Ok((poke_id, pmove)) => remove_move_from_pokemon(parsed, poke_id, pmove),
+                Err(e) => eprintln!("Error: {}", e),
+            }
         }
         [poke_id] => {
             show_all_moves_for_pokemon(&parsed, poke_id);
@@ -28,44 +34,59 @@ fn main() {
     }
 }
 
-fn add_move_to_pokemon(mut save_file: SaveFile, poke_id: &str, move_id: &str, move_level: &str) {
-    let poke_id: u16 = poke_id.parse().expect("First argument to be Pokemon ID");
-    let poke_id = poke_id - 1;
-    let pmove = {
-        let id: u16 = move_id.parse().expect("Third argument to be move ID");
-        let level: u16 = move_level.parse().expect("Fourth argument to be level");
-        Move::new(id, level)
-    };
+fn parse_args(poke_id: &str, move_id: &str, move_level: &str) -> Result<(u16, Move), &'static str> {
+    let poke_id: u16 = poke_id
+        .parse()
+        .map_err(|_| "First argument must be a valid Pokemon ID")?;
+
+    let poke_id = poke_id
+        .checked_sub(1)
+        .ok_or("First argument must be greater than 0")?;
+
+    let id: u16 = move_id
+        .parse()
+        .map_err(|_| "Third argument must be a valid move ID")?;
+
+    let level: u16 = move_level
+        .parse()
+        .map_err(|_| "Fourth argument must be a valid level")?;
+
+    Ok((poke_id, Move::new(id, level)))
+}
+
+fn insert_move_sorted(moves: &mut Vec<Move>, pmove: Move) {
+    let insert_pos = moves
+        .iter()
+        .position(|m| m.level() > pmove.level())
+        .unwrap_or(moves.len());
+
+    moves.insert(insert_pos, pmove);
+}
+
+fn add_move_to_pokemon(mut save_file: SaveFile, poke_id: u16, pmove: Move) {
+    let moves = &mut save_file.pokemons[usize::from(poke_id)];
+
+    insert_move_sorted(moves, pmove);
 
     println!(
-        "Wrote {} for Pokemon {}",
+        "Inserted {} for Pokemon {}",
         pmove,
         POKE_NAMES[usize::from(poke_id)]
     );
 
-    save_file.pokemons[usize::from(poke_id)].push(pmove);
     save_to_file(save_file);
 }
 
-fn remove_move_from_pokemon(
-    mut save_file: SaveFile,
-    poke_id: &str,
-    move_id: &str,
-    move_level: &str,
-) {
-    let poke_id: u16 = poke_id.parse().expect("First argument to be Pokemon ID");
-    let poke_id = poke_id - 1;
-    let pmove = {
-        let id: u16 = move_id.parse().expect("Third argument to be move ID");
-        let level: u16 = move_level.parse().expect("Fourth argument to be level");
-        Move::new(id, level)
-    };
-
-    let moves = &mut save_file.pokemons[usize::from(poke_id)];
+fn remove_move_if_exists(moves: &mut Vec<Move>, pmove: Move) -> bool {
     let original_length = moves.len();
     moves.retain(|m| *m != pmove);
+    moves.len() < original_length
+}
 
-    if moves.len() < original_length {
+fn remove_move_from_pokemon(mut save_file: SaveFile, poke_id: u16, pmove: Move) {
+    let moves = &mut save_file.pokemons[usize::from(poke_id)];
+
+    if remove_move_if_exists(moves, pmove) {
         println!(
             "Removed {} from Pokemon {}",
             pmove,
@@ -98,7 +119,6 @@ fn show_all(parsed: &SaveFile) {
         println!("{name}: {moves:?}");
     }
 }
-
 
 fn save_to_file(save_file: SaveFile) {
     fs::File::create_new("out.narc")
