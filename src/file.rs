@@ -52,24 +52,14 @@ impl TryFrom<&[u8]> for SaveFile {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Move {
-    id: u16,
-    level: u16,
+    pub id: u16,
+    pub level: u16,
 }
 
 impl Move {
     #[must_use]
     pub const fn new(id: u16, level: u16) -> Self {
         Self { id, level }
-    }
-
-    #[must_use]
-    pub const fn id(&self) -> u16 {
-        self.id
-    }
-
-    #[must_use]
-    pub const fn level(&self) -> u16 {
-        self.level
     }
 }
 

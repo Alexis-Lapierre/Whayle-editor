@@ -1,7 +1,6 @@
 use file::{Move, SaveFile};
 use names::POKE_NAMES;
 use std::fs;
-use std::io::Write;
 
 pub mod file;
 pub mod names;
@@ -12,16 +11,15 @@ fn main() {
 
     let args: Vec<String> = std::env::args().collect();
     match &args[1..] {
-        [poke_id, add, move_id, move_level] if add == "add" => {
-            match parse_args(poke_id, move_id, move_level) {
-                Ok((poke_id, pmove)) => add_move_to_pokemon(parsed, poke_id, pmove),
-                Err(e) => eprintln!("Error: {e}"),
-            }
-        }
-        [poke_id, rem, move_id, move_level] if rem == "rem" => {
-            match parse_args(poke_id, move_id, move_level) {
-                Ok((poke_id, pmove)) => remove_move_from_pokemon(parsed, poke_id, pmove),
-                Err(e) => eprintln!("Error: {e}"),
+        [poke_id, add_rem, move_id, move_level] => {
+            let (pid, pmove) = parse_args(poke_id, move_id, move_level).unwrap();
+            match add_rem.as_str() {
+                "add" => add_move_to_pokemon(parsed, pid, pmove),
+
+                "del" | "rem" => remove_move_from_pokemon(parsed, pid, pmove),
+                _ => panic!(
+                    "Unexpected second argument: expected “add” or “del” but got “{add_rem}”"
+                ),
             }
         }
         [poke_id] => {
@@ -57,7 +55,7 @@ fn parse_args(poke_id: &str, move_id: &str, move_level: &str) -> Result<(u16, Mo
 fn insert_move_sorted(moves: &mut Vec<Move>, pmove: Move) {
     let insert_pos = moves
         .iter()
-        .position(|m| m.level() > pmove.level())
+        .position(|m| m.level > pmove.level)
         .unwrap_or(moves.len());
 
     moves.insert(insert_pos, pmove);
@@ -121,8 +119,9 @@ fn show_all(parsed: &SaveFile) {
 }
 
 fn save_to_file(save_file: SaveFile) {
-    fs::File::create_new("out.narc")
-        .unwrap()
-        .write_all(&save_file.to_binary_format())
-        .expect("Writing to file to work");
+    std::io::Write::write_all(
+        &mut fs::File::create_new("out.narc").unwrap(),
+        &save_file.to_binary_format(),
+    )
+    .expect("Writing to file to work");
 }
