@@ -1,36 +1,89 @@
 use file::{Move, SaveFile};
 use names::POKE_NAMES;
-use std::fs;
+use ratatui::{
+    crossterm::event::{self, Event, KeyCode, KeyEventKind},
+    layout::Constraint,
+    style::{Color, Style},
+    widgets::{Block, Row, Table},
+    DefaultTerminal, Frame,
+};
+use std::{fs, ops::AddAssign};
 
 pub mod file;
 pub mod names;
 
 fn main() {
-    let bytes = fs::read("./a018.narc").expect("Should have been able to read the file");
-    let parsed = SaveFile::try_from(bytes.as_ref()).expect("Parsing to work");
+    let terminal = ratatui::init();
+    let result = run(terminal);
+    ratatui::restore();
+    result
+}
 
-    let args: Vec<String> = std::env::args().collect();
-    match &args[1..] {
-        [poke_id, add_rem, move_id, move_level] => {
-            let (pid, pmove) = parse_args(poke_id, move_id, move_level).unwrap();
-            match add_rem.as_str() {
-                "add" => add_move_to_pokemon(parsed, pid, pmove),
-
-                "del" | "rem" => remove_move_from_pokemon(parsed, pid, pmove),
-                _ => panic!(
-                    "Unexpected second argument: expected “add” or “del” but got “{add_rem}”"
-                ),
-            }
+fn run(mut terminal: DefaultTerminal) {
+    let mut row = 0usize;
+    loop {
+        terminal.draw(|frame| render(frame, row + 1)).unwrap();
+        match event::read().unwrap() {
+            Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
+                KeyCode::Char('q') | KeyCode::Esc => break,
+                KeyCode::Up => {
+                    row.checked_sub(1).map(|sub| row = sub);
+                }
+                KeyCode::Down => {
+                    row += 1;
+                    if row >= POKE_NAMES.len() {
+                        row = POKE_NAMES.len() - 1;
+                    }
+                }
+                _ => {}
+            },
+            _ => {}
         }
-        [poke_id] => {
-            show_all_moves_for_pokemon(&parsed, poke_id);
-        }
-        [] => {
-            show_all(&parsed);
-        }
-        _ => todo!("Handle this branch"),
     }
 }
+
+fn render(frame: &mut Frame, current_row: usize) {
+    let rows = (1..).zip(POKE_NAMES).map(|(id, name)| {
+        let row = Row::new([id.to_string(), name.to_string()]);
+        if id == current_row {
+            row.style(Style::default().fg(Color::Black).bg(Color::White))
+        } else {
+            row
+        }
+    });
+    let widths = [Constraint::Length(5), Constraint::Length(25)];
+    let table = Table::new(rows, widths)
+        .header(Row::new(["ID", "Name"]))
+        .block(Block::bordered().title("Pokemons"));
+    frame.render_widget(table, frame.area());
+}
+
+// fn main() {
+//     let bytes = fs::read("./a018.narc").expect("Should have been able to read the file");
+//     let parsed = SaveFile::try_from(bytes.as_ref()).expect("Parsing to work");
+
+//     let args: Vec<String> = std::env::args().collect();
+//     match &args[1..] {
+//         [poke_id, add_rem, move_id, move_level] => {
+//             let (pid, pmove) = parse_args(poke_id, move_id, move_level).unwrap();
+//             match add_rem.as_str() {
+//                 "add" => add_move_to_pokemon(parsed, pid, pmove),
+
+//                 "del" | "rem" => remove_move_from_pokemon(parsed, pid, pmove),
+//                 _ => panic!(
+//                     "Unexpected second argument: expected “add” or “del” but got “{add_rem}”"
+//                 ),
+//             }
+//         }
+//         [poke_id] => {
+//             show_all_moves_for_pokemon(&parsed, poke_id);
+//         }
+//         [] => {
+//             show_all(&parsed);
+//         }
+//         _ => todo!("Handle this branch"),
+//     }
+// }
 
 fn parse_args(poke_id: &str, move_id: &str, move_level: &str) -> Result<(u16, Move), &'static str> {
     let poke_id: u16 = poke_id
