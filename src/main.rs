@@ -15,13 +15,13 @@ fn main() {
         [poke_id, add, move_id, move_level] if add == "add" => {
             match parse_args(poke_id, move_id, move_level) {
                 Ok((poke_id, pmove)) => add_move_to_pokemon(parsed, poke_id, pmove),
-                Err(e) => eprintln!("Error: {}", e),
+                Err(e) => eprintln!("Error: {e}"),
             }
         }
         [poke_id, rem, move_id, move_level] if rem == "rem" => {
             match parse_args(poke_id, move_id, move_level) {
                 Ok((poke_id, pmove)) => remove_move_from_pokemon(parsed, poke_id, pmove),
-                Err(e) => eprintln!("Error: {}", e),
+                Err(e) => eprintln!("Error: {e}"),
             }
         }
         [poke_id] => {

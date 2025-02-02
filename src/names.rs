@@ -1230,6 +1230,7 @@ pub const MOVE_NAMES: [&str; 559] = [
     "Fusion Bolt",
 ];
 
+#[must_use]
 pub fn move_id_to_name(id: usize) -> &'static str {
     debug_assert!(id != 0);
     MOVE_NAMES.get(id - 1).unwrap_or(&"-----")

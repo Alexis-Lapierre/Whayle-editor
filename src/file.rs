@@ -10,6 +10,7 @@ pub struct SaveFile {
 }
 
 impl SaveFile {
+    #[must_use]
     pub fn to_binary_format(self) -> Vec<u8> {
         let mut result = Vec::from(self.file_start);
         result.extend_from_slice(&POKEMON_DELIMITER);
@@ -61,11 +62,13 @@ impl Move {
         Self { id, level }
     }
 
-    pub fn id(&self) -> u16 {
+    #[must_use]
+    pub const fn id(&self) -> u16 {
         self.id
     }
 
-    pub fn level(&self) -> u16 {
+    #[must_use]
+    pub const fn level(&self) -> u16 {
         self.level
     }
 }
