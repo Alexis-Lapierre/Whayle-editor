@@ -1,5 +1,4 @@
-use file::Move;
-use file::SaveFile;
+use file::{Move, SaveFile};
 use names::POKE_NAMES;
 use std::fs;
 use std::io::Write;
@@ -20,10 +19,10 @@ fn main() {
             remove_move_from_pokemon(parsed, poke_id, move_id, move_level);
         }
         [poke_id] => {
-            show_all_moves_for_pokemon(parsed, poke_id);
+            show_all_moves_for_pokemon(&parsed, poke_id);
         }
         [] => {
-            show_all(parsed);
+            show_all(&parsed);
         }
         _ => todo!("Handle this branch"),
     }
@@ -82,8 +81,8 @@ fn remove_move_from_pokemon(
     }
 }
 
-fn show_all_moves_for_pokemon(parsed: SaveFile, poke_id: &str) {
-    let mut pokemons = POKE_NAMES.iter().zip(parsed.pokemons);
+fn show_all_moves_for_pokemon(parsed: &SaveFile, poke_id: &str) {
+    let mut pokemons = POKE_NAMES.iter().zip(parsed.pokemons.iter());
     let poke_id: u16 = poke_id.parse().expect("First argument to be Pokemon ID");
     assert!(poke_id != 0);
 
@@ -94,11 +93,12 @@ fn show_all_moves_for_pokemon(parsed: SaveFile, poke_id: &str) {
     }
 }
 
-fn show_all(parsed: SaveFile) {
-    for (name, moves) in POKE_NAMES.iter().zip(parsed.pokemons) {
+fn show_all(parsed: &SaveFile) {
+    for (name, moves) in POKE_NAMES.iter().zip(parsed.pokemons.iter()) {
         println!("{name}: {moves:?}");
     }
 }
+
 
 fn save_to_file(save_file: SaveFile) {
     fs::File::create_new("out.narc")
