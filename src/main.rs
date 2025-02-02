@@ -2,35 +2,45 @@ use file::{Move, SaveFile};
 use names::POKE_NAMES;
 use std::fs;
 
-pub mod file;
-pub mod names;
+mod file;
+mod names;
+mod tui;
 
 fn main() {
-    let bytes = fs::read("./a018.narc").expect("Should have been able to read the file");
-    let parsed = SaveFile::try_from(bytes.as_ref()).expect("Parsing to work");
-
-    let args: Vec<String> = std::env::args().collect();
-    match &args[1..] {
-        [poke_id, add_rem, move_id, move_level] => {
-            let (pid, pmove) = parse_args(poke_id, move_id, move_level).unwrap();
-            match add_rem.as_str() {
-                "add" => add_move_to_pokemon(parsed, pid, pmove),
-
-                "del" | "rem" => remove_move_from_pokemon(parsed, pid, pmove),
-                _ => panic!(
-                    "Unexpected second argument: expected “add” or “del” but got “{add_rem}”"
-                ),
-            }
-        }
-        [poke_id] => {
-            show_all_moves_for_pokemon(&parsed, poke_id);
-        }
-        [] => {
-            show_all(&parsed);
-        }
-        _ => todo!("Handle this branch"),
-    }
+    let result = tui::run(ratatui::init(), {
+        let bytes = fs::read("./a018.narc").expect("Should have been able to read the file");
+        SaveFile::try_from(bytes.as_ref()).expect("Parsing to work")
+    });
+    ratatui::restore();
+    result
 }
+
+// fn main() {
+//     let bytes = fs::read("./a018.narc").expect("Should have been able to read the file");
+//     let parsed = SaveFile::try_from(bytes.as_ref()).expect("Parsing to work");
+
+//     let args: Vec<String> = std::env::args().collect();
+//     match &args[1..] {
+//         [poke_id, add_rem, move_id, move_level] => {
+//             let (pid, pmove) = parse_args(poke_id, move_id, move_level).unwrap();
+//             match add_rem.as_str() {
+//                 "add" => add_move_to_pokemon(parsed, pid, pmove),
+
+//                 "del" | "rem" => remove_move_from_pokemon(parsed, pid, pmove),
+//                 _ => panic!(
+//                     "Unexpected second argument: expected “add” or “del” but got “{add_rem}”"
+//                 ),
+//             }
+//         }
+//         [poke_id] => {
+//             show_all_moves_for_pokemon(&parsed, poke_id);
+//         }
+//         [] => {
+//             show_all(&parsed);
+//         }
+//         _ => todo!("Handle this branch"),
+//     }
+// }
 
 fn parse_args(poke_id: &str, move_id: &str, move_level: &str) -> Result<(u16, Move), &'static str> {
     let poke_id: u16 = poke_id
