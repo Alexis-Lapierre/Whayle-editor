@@ -3,8 +3,8 @@ use names::POKE_NAMES;
 use ratatui::{
     crossterm::event::{self, Event, KeyCode, KeyEventKind},
     layout::Constraint,
-    style::{Color, Style},
-    widgets::{Block, Row, Table},
+    style::{Color, Style, Stylize},
+    widgets::{Block, HighlightSpacing, Row, Table, TableState},
     DefaultTerminal, Frame,
 };
 use std::{fs, ops::AddAssign};
@@ -22,17 +22,17 @@ fn main() {
 fn run(mut terminal: DefaultTerminal) {
     let mut row = 0usize;
     loop {
-        terminal.draw(|frame| render(frame, row + 1)).unwrap();
+        terminal.draw(|frame| render(frame, row)).unwrap();
         match event::read().unwrap() {
             Event::Key(key) if key.kind == KeyEventKind::Press => match key.code {
                 KeyCode::Char('q') | KeyCode::Esc => break,
                 KeyCode::Up => {
-                    row.checked_sub(1).map(|sub| row = sub);
+                    row = row.checked_sub(1).unwrap_or(POKE_NAMES.len() - 1);
                 }
                 KeyCode::Down => {
                     row += 1;
                     if row >= POKE_NAMES.len() {
-                        row = POKE_NAMES.len() - 1;
+                        row = 0;
                     }
                 }
                 _ => {}
@@ -43,19 +43,22 @@ fn run(mut terminal: DefaultTerminal) {
 }
 
 fn render(frame: &mut Frame, current_row: usize) {
-    let rows = (1..).zip(POKE_NAMES).map(|(id, name)| {
-        let row = Row::new([id.to_string(), name.to_string()]);
-        if id == current_row {
-            row.style(Style::default().fg(Color::Black).bg(Color::White))
-        } else {
-            row
-        }
-    });
+    let rows = (1..)
+        .zip(POKE_NAMES)
+        .map(|(id, name)| Row::new([id.to_string(), name.to_string()]));
     let widths = [Constraint::Length(5), Constraint::Length(25)];
     let table = Table::new(rows, widths)
         .header(Row::new(["ID", "Name"]))
-        .block(Block::bordered().title("Pokemons"));
-    frame.render_widget(table, frame.area());
+        .block(Block::bordered().title("Pokemons"))
+        .row_highlight_style(Style::new().reversed())
+        .highlight_spacing(HighlightSpacing::Always)
+        .highlight_symbol(">>");
+    frame.render_stateful_widget(table, frame.area(), &mut {
+        let mut table_state = TableState::default();
+        // *table_state.offset_mut() = 1; // display the second row and onwards
+        table_state.select(Some(current_row)); // select the forth row (0-indexed)
+        table_state // table_state.select_column(Some(2)); // select the third column (0-indexed)});
+    });
 }
 
 // fn main() {
