@@ -74,7 +74,7 @@ impl App {
     fn layout(&self) -> Layout {
         Layout::default()
             .direction(Direction::Horizontal)
-            .constraints(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
     }
 
     fn pokemon_table(&self) -> Table<'_> {
