@@ -10,7 +10,7 @@ use ratatui::{
 };
 
 pub struct App {
-    save_file: SaveFile,
+    pub save_file: SaveFile,
     gui_state: State,
 }
 

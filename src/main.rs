@@ -12,7 +12,7 @@ fn main() {
         SaveFile::try_from(bytes.as_ref()).expect("Parsing to work")
     });
     ratatui::restore();
-    result
+    save_to_file(result)
 }
 
 // fn main() {

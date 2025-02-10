@@ -8,7 +8,7 @@ use crate::file::SaveFile;
 
 mod app;
 
-pub fn run(mut terminal: DefaultTerminal, save_file: SaveFile) {
+pub fn run(mut terminal: DefaultTerminal, save_file: SaveFile) -> SaveFile {
     let mut app = App::from_save_file(save_file);
     loop {
         terminal.draw(|frame| app.render(frame)).unwrap();
@@ -25,4 +25,6 @@ pub fn run(mut terminal: DefaultTerminal, save_file: SaveFile) {
             _ => {}
         }
     }
+
+    app.save_file
 }
