@@ -61,6 +61,11 @@ impl Move {
     pub const fn new(id: u16, level: u16) -> Self {
         Self { id, level }
     }
+
+    #[must_use]
+    pub fn name(&self) -> &'static str {
+        move_id_to_name(self.id.into())
+    }
 }
 
 impl From<&[u8; 4]> for Move {
