@@ -3,9 +3,10 @@ use crate::{
     names::POKE_NAMES,
 };
 use ratatui::{
-    layout::{Constraint, Direction, Layout},
+    layout::{Alignment, Constraint, Direction, Layout},
     style::{Style, Stylize},
-    widgets::{Block, HighlightSpacing, Row, Table, TableState},
+    text::{Line, Span},
+    widgets::{Block, HighlightSpacing, Paragraph, Row, Table, TableState},
     Frame,
 };
 
@@ -66,7 +67,29 @@ impl App {
     }
 
     pub fn render(&self, frame: &mut Frame) {
-        let layout = self.layout().split(frame.area());
+        let mut instructions: Vec<Span> = Vec::new();
+        match self.gui_state.selected {
+            Selected::Pokemon => {
+                instructions.extend_from_slice(&[" Moves ".into(), "<Right>".blue().bold()])
+            }
+            Selected::Move(_) => instructions.extend_from_slice(&[
+                " Pokemons ".into(),
+                "<Left>".blue().bold(),
+                " Delete ".into(),
+                "<D>".blue().bold(),
+            ]),
+        };
+        instructions.extend_from_slice(&[" Quit ".into(), "<Q> ".blue().bold()]);
+
+        let topbottom = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([Constraint::Fill(1), Constraint::Length(1)])
+            .split(frame.area());
+        let instructions = Paragraph::new(Line::from(instructions))
+            .style(Style::new().white().on_black())
+            .alignment(Alignment::Center);
+        frame.render_widget(instructions, topbottom[1]);
+        let layout = self.layout().split(topbottom[0]);
         frame.render_stateful_widget(self.pokemon_table(), layout[0], &mut self.pokemon_state());
         frame.render_stateful_widget(self.move_table(), layout[1], &mut self.move_state());
     }
